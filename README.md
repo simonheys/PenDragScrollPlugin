@@ -3,12 +3,13 @@
 > [!WARNING]
 > This project was partially vibecoded because I needed this functionality quickly for myself, but it is fully functional and I'm sharing it publicly in case others find it useful.
 
-A small OpenTabletDriver plugin for **Linux and Windows** that turns a pen button into a **hold-to-scroll modifier**.
+A small OpenTabletDriver plugin for **Linux, macOS, and Windows** that turns a pen button into a **hold-to-scroll modifier**.
 
-While the modifier is held, pen movement is converted into high-resolution mouse wheel scrolling instead of normal cursor movement.
+While the modifier is held and the pen tip is touching the tablet, distance from the initial touch point is converted into continuous scrolling instead of normal cursor movement.
 
 ## Features
 - Hold a pen button to enable drag-to-scroll
+- Require pen-tip contact before scrolling starts
 - Vertical drag scrolling by default
 - Optional horizontal scrolling support
 - Optional cursor anchoring while scrolling
@@ -38,12 +39,13 @@ The active config was set up like this:
 - `Filters/PenDragScrollFilter.cs` - movement-to-scroll filter
 - `State/DragScrollStateStore.cs` - shared on/off state
 - `Native/Linux/...` - Linux evdev/uinput wheel emitter
+- `Native/MacOS/...` - macOS CoreGraphics wheel emitter
 - `PenDragScroll.csproj` - project file
 - `install.sh` - local build/install helper
 - `metadata.json` - OTD plugin metadata
 
 ## Requirements
-- Linux or Windows
+- Linux, macOS, or Windows
 - OpenTabletDriver `0.6.6.2`
 - .NET 8 SDK
 - on Linux: permissions for virtual input / uinput as required by your setup
@@ -85,8 +87,13 @@ Then restart OpenTabletDriver.
   "Path": "PenDragScroll.Filters.PenDragScrollFilter",
   "Settings": [
     { "Property": "AnchorCursor", "Value": true },
-    { "Property": "VerticalUnitsPerPixel", "Value": 30.0 },
+    { "Property": "VerticalUnitsPerPixel", "Value": 0.12 },
     { "Property": "HorizontalUnitsPerPixel", "Value": 0.0 },
+    { "Property": "DeadZonePixels", "Value": 24.0 },
+    { "Property": "PressureThreshold", "Value": 0 },
+    { "Property": "PenButtonIndex", "Value": 0 },
+    { "Property": "SuppressTipWhileScrolling", "Value": true },
+    { "Property": "ScrollIntervalMs", "Value": 16.0 },
     { "Property": "InvertVertical", "Value": false },
     { "Property": "InvertHorizontal", "Value": false }
   ],
@@ -108,10 +115,14 @@ Then restart OpenTabletDriver.
 Adjust:
 - `VerticalUnitsPerPixel`
 - `HorizontalUnitsPerPixel`
+- `DeadZonePixels`
+- `ScrollIntervalMs`
+- `PenButtonIndex`
 
 Notes:
 - `120` units is about one traditional wheel tick on Linux/Windows
-- `30.0` is a moderate default for smooth scrolling
+- `0.12` is a moderate default for Wacom-like continuous rate scrolling on macOS
+- Larger `DeadZonePixels` values require a longer drag before scrolling starts
 
 ### Direction
 If scrolling feels reversed:
@@ -121,9 +132,11 @@ If scrolling feels reversed:
 ### Cursor behavior
 - `AnchorCursor = true`: keep cursor fixed while scrolling
 - `AnchorCursor = false`: allow cursor to move while also scrolling
+- `SuppressTipWhileScrolling = true`: prevent tip-click actions such as text selection while scrolling, until the pen tip is lifted
 
 ## Platform notes
 - **Linux**: uses evdev/uinput high-resolution wheel events
+- **macOS**: uses CoreGraphics pixel scroll events
 - **Windows**: uses `SendInput` wheel events
 
 ## Known limitations

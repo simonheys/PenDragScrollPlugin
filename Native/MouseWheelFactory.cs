@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using PenDragScroll.Native.Linux;
+using PenDragScroll.Native.MacOS;
 using PenDragScroll.Native.Windows;
 
 namespace PenDragScroll.Native;
@@ -14,6 +15,9 @@ internal static class MouseWheelFactory
         if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             return new LinuxMouseWheel();
 
-        throw new PlatformNotSupportedException("Pen Drag Scroll currently supports Linux and Windows.");
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            return new MacOSMouseWheel();
+
+        throw new PlatformNotSupportedException("Pen Drag Scroll currently supports Linux, macOS, and Windows.");
     }
 }
