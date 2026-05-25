@@ -1,0 +1,22 @@
+#!/bin/sh
+set -eu
+
+PLUGIN_NAME="Pen Drag Scroll"
+
+CONSOLE_USER="$(/usr/bin/stat -f %Su /dev/console)"
+if [ -z "${CONSOLE_USER}" ] || [ "${CONSOLE_USER}" = "root" ]; then
+  echo "Could not determine the logged-in user." >&2
+  exit 1
+fi
+
+USER_HOME="$(/usr/bin/dscl . -read "/Users/${CONSOLE_USER}" NFSHomeDirectory | /usr/bin/sed 's/^NFSHomeDirectory: //')"
+PLUGIN_DIR="${USER_HOME}/Library/Application Support/OpenTabletDriver/Plugins/${PLUGIN_NAME}"
+DLL_B64="__PENDRAGSCROLL_DLL_BASE64__"
+METADATA_B64="__PENDRAGSCROLL_METADATA_BASE64__"
+
+/bin/mkdir -p "${PLUGIN_DIR}"
+/bin/echo "${DLL_B64}" | /usr/bin/base64 -D -o "${PLUGIN_DIR}/PenDragScroll.dll"
+/bin/echo "${METADATA_B64}" | /usr/bin/base64 -D -o "${PLUGIN_DIR}/metadata.json"
+/usr/sbin/chown -R "${CONSOLE_USER}:staff" "${USER_HOME}/Library/Application Support/OpenTabletDriver"
+
+exit 0
