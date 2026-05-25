@@ -1,0 +1,71 @@
+#!/bin/sh
+set -eu
+
+PLUGIN_NAME="Pen Drag Scroll"
+SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+PAYLOAD_TARBALL="${SCRIPT_DIR}/payload.tar.gz"
+TMP_ROOT="$(/usr/bin/mktemp -d "/tmp/pendragscroll-full.XXXXXX")"
+CONSOLE_USER="$(/usr/bin/stat -f %Su /dev/console)"
+
+cleanup() {
+  /bin/rm -rf "${TMP_ROOT}"
+}
+
+trap cleanup EXIT
+
+if [ -z "${CONSOLE_USER}" ] || [ "${CONSOLE_USER}" = "root" ]; then
+  echo "Could not determine the logged-in user." >&2
+  exit 1
+fi
+
+if [ ! -f "${PAYLOAD_TARBALL}" ]; then
+  echo "Installer payload not found: ${PAYLOAD_TARBALL}" >&2
+  exit 1
+fi
+
+USER_HOME="$(/usr/bin/dscl . -read "/Users/${CONSOLE_USER}" NFSHomeDirectory | /usr/bin/sed 's/^NFSHomeDirectory: //')"
+OTD_DATA_DIR="${USER_HOME}/Library/Application Support/OpenTabletDriver"
+PLUGIN_DIR="${OTD_DATA_DIR}/Plugins/${PLUGIN_NAME}"
+LAUNCH_AGENTS_DIR="${USER_HOME}/Library/LaunchAgents"
+LAUNCH_AGENT="${LAUNCH_AGENTS_DIR}/net.opentabletdriver.login.plist"
+STAGED_SUPPORT="${TMP_ROOT}/Library/Application Support/PenDragScrollFullInstaller"
+STAGED_APP="${TMP_ROOT}/Applications/OpenTabletDriver.app"
+
+/usr/bin/tar -xzf "${PAYLOAD_TARBALL}" -C "${TMP_ROOT}"
+
+if [ ! -d "${STAGED_APP}" ]; then
+  echo "OpenTabletDriver app missing from installer payload." >&2
+  exit 1
+fi
+
+if [ -d "/Applications/OpenTabletDriver.app" ]; then
+  if [ ! -d "/Applications/OpenTabletDriver.app.pre-pendragscroll-installer" ]; then
+    /bin/mv "/Applications/OpenTabletDriver.app" "/Applications/OpenTabletDriver.app.pre-pendragscroll-installer"
+  else
+    /bin/rm -rf "/Applications/OpenTabletDriver.app"
+  fi
+fi
+
+/usr/bin/ditto --norsrc --noextattr "${STAGED_APP}" "/Applications/OpenTabletDriver.app"
+/usr/sbin/chown -R root:admin "/Applications/OpenTabletDriver.app"
+
+/bin/mkdir -p "${PLUGIN_DIR}" "${LAUNCH_AGENTS_DIR}"
+
+/usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/${PLUGIN_NAME}/PenDragScroll.dll" "${PLUGIN_DIR}/PenDragScroll.dll"
+/usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/${PLUGIN_NAME}/metadata.json" "${PLUGIN_DIR}/metadata.json"
+
+if [ ! -f "${OTD_DATA_DIR}/settings.json" ]; then
+  /usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/settings.json" "${OTD_DATA_DIR}/settings.json"
+else
+  /bin/cp "${OTD_DATA_DIR}/settings.json" "${OTD_DATA_DIR}/settings.json.pre-pendragscroll-installer"
+  /usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/settings.json" "${OTD_DATA_DIR}/settings.json"
+fi
+
+/usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/net.opentabletdriver.login.plist" "${LAUNCH_AGENT}"
+/usr/sbin/chown -R "${CONSOLE_USER}:staff" "${OTD_DATA_DIR}" "${LAUNCH_AGENTS_DIR}"
+
+/bin/launchctl bootout "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl bootstrap "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl enable "gui/$(/usr/bin/id -u "${CONSOLE_USER}")/net.opentabletdriver.login" 2>/dev/null || true
+
+exit 0
