@@ -5,6 +5,7 @@ export COPYFILE_DISABLE=1
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 DOTNET_BIN="${DOTNET:-/opt/homebrew/opt/dotnet@8/bin/dotnet}"
 SIGN_IDENTITY="${INSTALLER_SIGN_IDENTITY:-}"
+NOTARY_PROFILE="${NOTARY_PROFILE:-}"
 
 VERSION="$(node -e "const fs=require('fs'); const m=JSON.parse(fs.readFileSync('${ROOT_DIR}/metadata.json','utf8')); process.stdout.write(m.PluginVersion)")"
 IDENTIFIER="com.simonheys.opentabletdriver.pendragscroll"
@@ -47,5 +48,13 @@ else
 fi
 
 /bin/rm -f "${COMPONENT_PKG}"
+
+if [ -n "${NOTARY_PROFILE}" ]; then
+  /usr/bin/xcrun notarytool submit "${PRODUCT_PKG}" \
+    --keychain-profile "${NOTARY_PROFILE}" \
+    --wait
+  /usr/bin/xcrun stapler staple "${PRODUCT_PKG}"
+  /usr/bin/xcrun stapler validate "${PRODUCT_PKG}"
+fi
 
 echo "${PRODUCT_PKG}"
