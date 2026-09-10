@@ -9,7 +9,7 @@
     <Authors>Justin</Authors>
     <Company>soestin</Company>
     <Product>Pen Drag Scroll</Product>
-    <Description>OpenTabletDriver plugin that turns a pen button into drag-to-scroll on Linux and Windows.</Description>
+    <Description>OpenTabletDriver plugin that turns a pen button into drag-to-scroll on Linux, macOS, and Windows.</Description>
     <PackageProjectUrl>https://github.com/soestin/PenDragScrollPlugin</PackageProjectUrl>
     <RepositoryUrl>https://github.com/soestin/PenDragScrollPlugin</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
