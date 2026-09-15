@@ -7,10 +7,17 @@
   <string>net.opentabletdriver.login</string>
   <key>ProgramArguments</key>
   <array>
-    <string>/usr/bin/open</string>
-    <string>/Applications/OpenTabletDriver.app</string>
+    <string>/Applications/OpenTabletDriver.app/Contents/MacOS/OpenTabletDriver.UX.MacOS</string>
+    <string>--minimized</string>
+    <string>--skipupdate</string>
   </array>
+  <key>WorkingDirectory</key>
+  <string>/Applications/OpenTabletDriver.app/Contents/MacOS</string>
   <key>RunAtLoad</key>
   <true/>
+  <key>ProcessType</key>
+  <string>Interactive</string>
+  <key>StartInterval</key>
+  <integer>60</integer>
 </dict>
 </plist>
