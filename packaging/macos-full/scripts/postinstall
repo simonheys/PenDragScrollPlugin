@@ -27,7 +27,8 @@ USER_HOME="$(/usr/bin/dscl . -read "/Users/${CONSOLE_USER}" NFSHomeDirectory | /
 OTD_DATA_DIR="${USER_HOME}/Library/Application Support/OpenTabletDriver"
 PLUGIN_DIR="${OTD_DATA_DIR}/Plugins/${PLUGIN_NAME}"
 LAUNCH_AGENTS_DIR="${USER_HOME}/Library/LaunchAgents"
-LAUNCH_AGENT="${LAUNCH_AGENTS_DIR}/net.opentabletdriver.login.plist"
+DAEMON_LAUNCH_AGENT="${LAUNCH_AGENTS_DIR}/net.opentabletdriver.daemon.plist"
+UX_LAUNCH_AGENT="${LAUNCH_AGENTS_DIR}/net.opentabletdriver.login.plist"
 STAGED_SUPPORT="${TMP_ROOT}/Library/Application Support/PenDragScrollFullInstaller"
 STAGED_APP="${TMP_ROOT}/Applications/OpenTabletDriver.app"
 
@@ -61,11 +62,15 @@ else
   /usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/settings.json" "${OTD_DATA_DIR}/settings.json"
 fi
 
-/usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/net.opentabletdriver.login.plist" "${LAUNCH_AGENT}"
+/usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/net.opentabletdriver.daemon.plist" "${DAEMON_LAUNCH_AGENT}"
+/usr/bin/ditto --norsrc --noextattr "${STAGED_SUPPORT}/net.opentabletdriver.login.plist" "${UX_LAUNCH_AGENT}"
 /usr/sbin/chown -R "${CONSOLE_USER}:staff" "${OTD_DATA_DIR}" "${LAUNCH_AGENTS_DIR}"
 
-/bin/launchctl bootout "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${LAUNCH_AGENT}" 2>/dev/null || true
-/bin/launchctl bootstrap "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl bootout "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${UX_LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl bootout "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${DAEMON_LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl bootstrap "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${DAEMON_LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl bootstrap "gui/$(/usr/bin/id -u "${CONSOLE_USER}")" "${UX_LAUNCH_AGENT}" 2>/dev/null || true
+/bin/launchctl enable "gui/$(/usr/bin/id -u "${CONSOLE_USER}")/net.opentabletdriver.daemon" 2>/dev/null || true
 /bin/launchctl enable "gui/$(/usr/bin/id -u "${CONSOLE_USER}")/net.opentabletdriver.login" 2>/dev/null || true
 
 exit 0

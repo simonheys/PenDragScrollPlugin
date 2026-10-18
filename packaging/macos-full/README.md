@@ -7,7 +7,8 @@ It bundles:
 - `/Applications/OpenTabletDriver.app`
 - Pen Drag Scroll plugin
 - the current OpenTabletDriver `settings.json`
-- a user LaunchAgent that opens OpenTabletDriver at login
+- a persistent user LaunchAgent for the tablet daemon
+- a separate user LaunchAgent that opens the minimized settings UI at login
 
 The package is built as a scripts-only installer with an embedded tarball. That avoids macOS extended-attribute metadata being written into the package payload.
 
@@ -33,4 +34,4 @@ Without notarization, Gatekeeper may reject the package in Finder even though it
 sudo installer -pkg PenDragScrollFull-0.1.1-macos.pkg -target /
 ```
 
-If the target Mac is Apple Silicon and Rosetta is not installed yet, macOS will prompt for Rosetta when OpenTabletDriver first launches.
+The daemon starts independently of the settings UI so tablet input does not wait for the GUI or stop when the GUI closes.

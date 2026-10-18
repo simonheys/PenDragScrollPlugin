@@ -40,6 +40,7 @@ fi
 /usr/bin/ditto --norsrc --noextattr "${ROOT_DIR}/bin/Release/net8.0/PenDragScroll.dll" "${PLUGIN_STAGING}/PenDragScroll.dll"
 /usr/bin/ditto --norsrc --noextattr "${ROOT_DIR}/metadata.json" "${PLUGIN_STAGING}/metadata.json"
 /usr/bin/ditto --norsrc --noextattr "${SETTINGS_JSON}" "${SUPPORT_STAGING}/settings.json"
+/usr/bin/ditto --norsrc --noextattr "${ROOT_DIR}/packaging/macos-full/templates/net.opentabletdriver.daemon.plist" "${SUPPORT_STAGING}/net.opentabletdriver.daemon.plist"
 /usr/bin/ditto --norsrc --noextattr "${ROOT_DIR}/packaging/macos-full/templates/net.opentabletdriver.login.plist" "${SUPPORT_STAGING}/net.opentabletdriver.login.plist"
 /usr/bin/ditto --norsrc --noextattr "${ROOT_DIR}/packaging/macos-full/scripts/postinstall" "${SCRIPTS_DIR}/postinstall"
 /bin/chmod 755 "${SCRIPTS_DIR}/postinstall"

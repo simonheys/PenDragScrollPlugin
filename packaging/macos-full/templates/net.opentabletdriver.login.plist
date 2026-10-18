@@ -17,7 +17,5 @@
   <true/>
   <key>ProcessType</key>
   <string>Interactive</string>
-  <key>StartInterval</key>
-  <integer>60</integer>
 </dict>
 </plist>
