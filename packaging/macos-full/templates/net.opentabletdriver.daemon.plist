@@ -11,10 +11,14 @@
   </array>
   <key>WorkingDirectory</key>
   <string>/Applications/OpenTabletDriver.app/Contents/MacOS</string>
-  <key>RunAtLoad</key>
-  <true/>
   <key>KeepAlive</key>
-  <true/>
+  <dict>
+    <key>PathState</key>
+    <dict>
+      <key>/Applications/OpenTabletDriver.app/Contents/MacOS/OpenTabletDriver.Daemon</key>
+      <true/>
+    </dict>
+  </dict>
   <key>ProcessType</key>
   <string>Interactive</string>
 </dict>
